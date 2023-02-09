@@ -4,6 +4,7 @@ const {
   removeContact,
   addContact,
   updateContact,
+  updateStatusContact,
 } = require("../models/contacts");
 
 const getContactsCtrl = async (req, res, next) => {
@@ -12,51 +13,44 @@ const getContactsCtrl = async (req, res, next) => {
 };
 
 const getContactByIdCtrl = async (req, res, next) => {
-    const contact = await getContactById(req.params.contactId);
-    if (!contact) {
-      return res.status(404).json({ message: "Not found" });
-    } else {
-      return res.status(200).json(contact);
-    }
-  };
-const addContactCtrl = async (req, res, next) => {
-    const { name, email, phone } = req.body;
+  const { contactId } = req.params;
 
-    if (!name || !email || !phone) {
-      return res.status(400).json({ message: "missing required name field" });
-    } else {
-      const result = await addContact(req.body);
-      return res.status(201).json(result);
-    }
-  };
+  const contact = await getContactById(contactId);
+
+  return res.status(200).json(contact);
+};
+const addContactCtrl = async (req, res, next) => {
+  const contact = await addContact(req.body);
+
+  return res.status(201).json({ message: "Contact Added", contact });
+};
 
 const removeContactCtrl = async (req, res, next) => {
-    const contact = await removeContact(req.params.contactId);
-    if (!contact) {
-      return res.status(404).json({ message: "Not found" });
-    } else {
-      return res.status(200).json({ message: "contact deleted" });
-    }
-  };
+  const { contactId } = req.params;
+  const contact = await removeContact(contactId);
+
+  return res.status(200).json({ message: "Contact Deleted", contact });
+};
 
 const updateContactCtrl = async (req, res, next) => {
-    const { name, email, phone } = req.body;
-  
-    if (!name || !email || !phone) {
-      return res.status(400).json({ message: "missing fields" });
-    } else {
-      const result = await updateContact(req.params.contactId, req.body);
-      if (!result) {
-        return res.status(404).json({ message: "Not found" });
-      }
-      return res.status(200).json(result);
-    }
-  }
+  const { contactId } = req.params;
+  await updateContact(contactId, req.body);
+  return res.status(200).json({ message: "Status success", changedBody: req.body });
+};
 
-  module.exports = {
-    getContactsCtrl,
-    getContactByIdCtrl,
-    addContactCtrl,
-    removeContactCtrl,
-    updateContactCtrl
-  }
+const getUpdateFavoriteCtrl = async (req, res, next) => {  
+  const { contactId } = req.params;
+
+  const result = await updateStatusContact(contactId, req.body);
+
+  return res.status(200).json(result);
+};
+
+module.exports = {
+  getContactsCtrl,
+  getContactByIdCtrl,
+  addContactCtrl,
+  removeContactCtrl,
+  updateContactCtrl,
+  getUpdateFavoriteCtrl,
+};
