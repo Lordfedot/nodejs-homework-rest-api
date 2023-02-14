@@ -1,7 +1,6 @@
-const { requestError } = require("../helpers/errors");
+const { getIdValidation } = require("../helpers/apiHelpers");
 const { Contact } = require("../db/contactModel");
-const mongoose = require('mongoose')
-const getIdValidation = (id) => mongoose.Types.ObjectId.isValid(id)
+const { WrongParametersError } = require("../helpers/errors");
 
 const listContacts = async () => {
   const contacts = await Contact.find({});
@@ -9,26 +8,22 @@ const listContacts = async () => {
 };
 
 const getContactById = async (contactId) => {
-  if (!getIdValidation(contactId)) {
-    throw requestError(404, 'Invalid Id')
-  }
+  getIdValidation(contactId);
   const contact = await Contact.findById(contactId);
 
   if (!contact) {
-    throw requestError(404, "Not Found");
+    throw new WrongParametersError("Not Found");
   }
 
   return contact;
 };
 
 const removeContact = async (contactId) => {
-  if (!getIdValidation(contactId)) {
-    throw requestError(404, 'Invalid Id')
-  }
+  getIdValidation(contactId);
   const contact = await Contact.findByIdAndDelete(contactId);
 
   if (!contact) {
-    throw requestError(404, "Not Found");
+    throw new WrongParametersError("Not Found");
   }
 
   return contact;
@@ -41,28 +36,27 @@ const addContact = async (body) => {
 };
 
 const updateContact = async (contactId, body) => {
+  getIdValidation(contactId);
   const updatedContact = await Contact.findByIdAndUpdate(contactId, body);
   if (!updatedContact) {
-    throw requestError(404, "Not Found");
+    throw new WrongParametersError("Not Found");
   }
   return updatedContact;
 };
 
 const updateStatusContact = async (contactId, body) => {
-  if (!getIdValidation(contactId)) {
-    throw requestError(404, 'Invalid Id')
-  }
+  getIdValidation(contactId);
   const { favorite } = body;
-  console.log(body);
+
   if (!body) {
-    throw requestError(400, "Missing field favorite");
+    throw new WrongParametersError("Missing field favorite");
   }
   const result = await Contact.findByIdAndUpdate(contactId, {
     $set: { favorite },
   });
 
   if (!result) {
-    throw requestError(404, "Not Found");
+    throw new WrongParametersError("Not Found");
   }
 
   return result;

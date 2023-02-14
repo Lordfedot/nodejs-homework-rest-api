@@ -9,7 +9,7 @@ const {
 
 const getContactsCtrl = async (req, res, next) => {
   const contacts = await listContacts();
-  return res.json({ contacts });
+  return res.status(200).json({ contacts });
 };
 
 const getContactByIdCtrl = async (req, res, next) => {

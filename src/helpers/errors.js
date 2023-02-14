@@ -1,17 +1,18 @@
-const messages = {
-  400: "Bad Request",
-  401: "Unautorized",
-  403: "Forbidden",
-  404: "Not found",
-  405: "Conflict",
-};
+class ValidationError extends Error {
+  constructor(message) {
+    super(message);
+    this.status = 400;
+  }
+}
 
-const requestError = (status, message = messages[status]) => {
-  const error = new Error(message);
-  error.status = status;
-  return error;
-};
+class WrongParametersError extends Error {
+  constructor(message) {
+    super(message);
+    this.status = 404;
+  }
+}
 
 module.exports = {
-  requestError,
+  ValidationError,
+  WrongParametersError,
 };

@@ -1,4 +1,5 @@
 const Joi = require("joi");
+const { ValidationError } = require("../helpers/errors");
 
 module.exports = {
   getValidation: (req, res, next) => {
@@ -13,9 +14,7 @@ module.exports = {
     });
     const validationResult = schema.validate(req.body);
     if (validationResult.error) {
-      return res
-        .status(400)
-        .json({ message: validationResult.error.details[0].message });
+      next(new ValidationError(validationResult.error.details[0].message));
     }
     next();
   },
@@ -26,9 +25,7 @@ module.exports = {
 
     const validationResult = schema.validate(req.body);
     if (validationResult.error) {
-      return res
-        .status(400)
-        .json({ message: validationResult.error.details[0].message });
+      next(new ValidationError(validationResult.error.details[0].message));
     }
     next();
   },
