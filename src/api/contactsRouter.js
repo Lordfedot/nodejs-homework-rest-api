@@ -1,6 +1,7 @@
 const express = require("express");
 const { getValidation, getFavoriteValidation } = require("../middlewares/middlewaresValidation");
 const { asyncWrapper } = require("../helpers/apiHelpers");
+const {authMiddleware} = require("../middlewares/authMiddleware")
 const {
   getContactsCtrl,
   getContactByIdCtrl,
@@ -11,6 +12,8 @@ const {
 } = require("../controllers/contactsControllers");
 
 const router = express.Router();
+
+router.use(authMiddleware)
 
 router.get("/", asyncWrapper(getContactsCtrl));
 
@@ -24,4 +27,4 @@ router.put("/:contactId", getValidation, asyncWrapper(updateContactCtrl));
 
 router.patch("/:contactId/favorite", getFavoriteValidation, asyncWrapper(getUpdateFavoriteCtrl));
 
-module.exports = router;
+module.exports = {contactsRouter: router};

@@ -29,4 +29,20 @@ module.exports = {
     }
     next();
   },
+  getAuthValidation: (req, res, next) => {
+    const schema = Joi.object({
+      email: Joi.string()
+        .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
+        .min(3)
+        .max(30)
+        .required(),
+      password: Joi.string().pattern(new RegExp("^[a-zA-Z0-9]{3,30}$")),
+    });
+
+    const validationResult = schema.validate(req.body);
+    if (validationResult.error) {
+      next(new ValidationError(validationResult.error.details[0].message));
+    }
+    next();
+  },
 };
