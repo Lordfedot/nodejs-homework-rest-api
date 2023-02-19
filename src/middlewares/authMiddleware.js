@@ -1,4 +1,4 @@
-const jwt = require("jsonwebtoken");
+
 const { NotAuthorizedError } = require("../helpers/errors");
 
 const authMiddleware = (req, res, next) => {

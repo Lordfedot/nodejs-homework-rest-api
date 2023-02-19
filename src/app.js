@@ -6,6 +6,7 @@ require("dotenv").config();
 const { errorHadler } = require("./helpers/apiHelpers");
 const { contactsRouter } = require("./api/contactsRouter");
 const { authRouter } = require("./api/authRouter");
+const { filesRouter } = require("./api/filesRouter");
 
 const app = express();
 
@@ -18,7 +19,6 @@ app.use(express.json());
 app.use("/api/auth/users", authRouter);
 app.use("/api/contacts", contactsRouter);
 app.use("/api/files", filesRouter);
-
 
 app.use(errorHadler);
 
