@@ -4,8 +4,7 @@ const { register, login, current } = require("../models/auth");
 const registrationCtrl = async (req, res, next) => {
   const { email, password } = req.body;
   const user = await register(email, password);
-
-  res.json({ email, subscription: user.subscription });
+  res.json({ email:user.email, subscription: user.subscription, avatar:user.avatarURL });
 };
 
 const loginCtrl = async (req, res, next) => {

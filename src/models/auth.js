@@ -2,9 +2,13 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { NotAuthorizedError, ConflictError } = require("../helpers/errors");
 const { User } = require("../db/userModel");
+const { getUrlForAvatar } = require("../helpers/getAvatar");
 
 const register = async (email, password) => {
-  const user = new User({ email, password });
+  const avatarURL = getUrlForAvatar(email);
+  console.log(avatarURL);
+
+  const user = new User({ email, password, avatarURL });
   const emailInUse = await User.findOne({ email });
   if (emailInUse) {
     throw new ConflictError("Email in use");
