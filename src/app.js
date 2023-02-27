@@ -17,7 +17,7 @@ app.use(express.json());
 
 app.use("/api/auth/users", authRouter);
 app.use("/api/contacts", contactsRouter);
-app.use("/api/files", filesRouter);
+
 
 
 app.use(errorHadler);

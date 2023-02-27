@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { MyCustomError } = require("../helpers/errors");
+const { MyCustomError, WrongParametersError } = require("../helpers/errors");
 
 const asyncWrapper = (controller) => {
   return (req, res, next) => {

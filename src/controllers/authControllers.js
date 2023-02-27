@@ -1,5 +1,5 @@
 const { NotAuthorizedError } = require("../helpers/errors");
-const { register, login, current } = require("../models/auth");
+const { register, login, current, updateSubscription } = require("../models/auth");
 
 const registrationCtrl = async (req, res, next) => {
   const { email, password } = req.body;
@@ -36,4 +36,19 @@ const currentCtrl = async (req, res, next) => {
   });
 };
 
-module.exports = { registrationCtrl, loginCtrl, logoutCtrl, currentCtrl };
+const updateSubscriptionCtrl = async (req, res, next) => {
+  const {subscription } = req.body;
+  const [{ owner }, token] = req.user;
+  
+  await updateSubscription(owner,subscription)
+
+  res.json({ status: "success" });
+};
+
+module.exports = {
+  registrationCtrl,
+  loginCtrl,
+  logoutCtrl,
+  currentCtrl,
+  updateSubscriptionCtrl,
+};

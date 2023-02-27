@@ -1,6 +1,10 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { NotAuthorizedError, ConflictError } = require("../helpers/errors");
+const {
+  NotAuthorizedError,
+  ConflictError,
+  WrongParametersError,
+} = require("../helpers/errors");
 const { User } = require("../db/userModel");
 
 const register = async (email, password) => {
@@ -39,4 +43,9 @@ const current = async (owner) => {
   return currentUser;
 };
 
-module.exports = { register, login, current };
+const updateSubscription = async (owner, subscription) => {
+  const result = await User.findOneAndUpdate({ _id: owner }, {$set: {subscription}});
+  return result;
+};
+
+module.exports = { register, login, current, updateSubscription };

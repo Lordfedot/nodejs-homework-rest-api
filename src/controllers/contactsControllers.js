@@ -5,11 +5,12 @@ const {
   addContact,
   updateContact,
   updateStatusContact,
+  updateSubscription,
 } = require("../models/contacts");
 
 const getContactsCtrl = async (req, res, next) => {
   const { owner } = req.user[0];
-  const { skip = 0, limit = 5, favorite } = req.query;
+  const { skip = 0, limit = 5, favorite = null} = req.query;
   
   const contacts = await listContacts(owner, { skip, limit, favorite});
   return res.status(200).json({ contacts });
@@ -55,6 +56,8 @@ const getUpdateFavoriteCtrl = async (req, res, next) => {
 
   return res.status(200).json(result);
 };
+
+
 
 module.exports = {
   getContactsCtrl,
