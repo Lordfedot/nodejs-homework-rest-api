@@ -9,8 +9,21 @@ module.exports = {
         .min(3)
         .max(30)
         .required(),
-      phone: Joi.number().integer(),
+      phone: Joi.number().integer().required(),
     });
+    const validationResult = schema.validate(req.body);
+    if (validationResult.error) {
+      return res
+        .status(400)
+        .json({ message: validationResult.error.details[0].message });
+    }
+    next();
+  },
+  getFavoriteValidation: (req, res, next) => {
+    const schema = Joi.object({
+      favorite: Joi.boolean().required(),
+    });
+
     const validationResult = schema.validate(req.body);
     if (validationResult.error) {
       return res
