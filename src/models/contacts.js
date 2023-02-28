@@ -1,68 +1,79 @@
-const { requestError } = require("../helpers/errors");
+const { getIdValidation } = require("../helpers/apiHelpers");
 const { Contact } = require("../db/contactModel");
-const mongoose = require('mongoose')
-const getIdValidation = (id) => mongoose.Types.ObjectId.isValid(id)
+const { WrongParametersError } = require("../helpers/errors");
 
-const listContacts = async () => {
-  const contacts = await Contact.find({});
-  return contacts;
+const listContacts = async (owner, { skip, limit, favorite }) => {
+  if (favorite) {
+    const contacts = await Contact.find({ owner, favorite })
+      .select({ __v: 0 })
+      .skip(skip)
+      .limit(limit);
+    return contacts;
+  } else {
+    const contacts = await Contact.find({ owner })
+      .select({ __v: 0 })
+      .skip(skip)
+      .limit(limit);
+    return contacts;
+  }
 };
 
-const getContactById = async (contactId) => {
-  if (!getIdValidation(contactId)) {
-    throw requestError(404, 'Invalid Id')
-  }
-  const contact = await Contact.findById(contactId);
+const getContactById = async (contactId, owner) => {
+  getIdValidation(contactId);
+  const contact = await Contact.findOne({ _id: contactId, owner });
 
   if (!contact) {
-    throw requestError(404, "Not Found");
+    throw new WrongParametersError("Not Found");
   }
 
   return contact;
 };
 
-const removeContact = async (contactId) => {
-  if (!getIdValidation(contactId)) {
-    throw requestError(404, 'Invalid Id')
-  }
-  const contact = await Contact.findByIdAndDelete(contactId);
-
+const removeContact = async (contactId, owner) => {
+  getIdValidation(contactId);
+  const contact = await Contact.findOneAndDelete({ _id: contactId, owner });
   if (!contact) {
-    throw requestError(404, "Not Found");
+    throw new WrongParametersError("Not Found");
   }
 
   return contact;
 };
 
-const addContact = async (body) => {
-  const newContact = new Contact(body);
+const addContact = async (body, owner) => {
+  const { name, email, phone } = body;
+  const newContact = new Contact({ name, email, phone, owner });
   await newContact.save();
   return newContact;
 };
 
-const updateContact = async (contactId, body) => {
-  const updatedContact = await Contact.findByIdAndUpdate(contactId, body);
+const updateContact = async (contactId, body, owner) => {
+  getIdValidation(contactId);
+  const updatedContact = await Contact.findOneAndUpdate(
+    { _id: contactId, owner },
+    body
+  );
   if (!updatedContact) {
-    throw requestError(404, "Not Found");
+    throw new WrongParametersError("Not Found");
   }
   return updatedContact;
 };
 
-const updateStatusContact = async (contactId, body) => {
-  if (!getIdValidation(contactId)) {
-    throw requestError(404, 'Invalid Id')
-  }
+const updateStatusContact = async (contactId, body, owner) => {
+  getIdValidation(contactId);
   const { favorite } = body;
-  console.log(body);
+
   if (!body) {
-    throw requestError(400, "Missing field favorite");
+    throw new WrongParametersError("Missing field favorite");
   }
-  const result = await Contact.findByIdAndUpdate(contactId, {
-    $set: { favorite },
-  });
+  const result = await Contact.findOneAndUpdate(
+    { _id: contactId, owner },
+    {
+      $set: { favorite },
+    }
+  );
 
   if (!result) {
-    throw requestError(404, "Not Found");
+    throw new WrongParametersError("Not Found");
   }
 
   return result;

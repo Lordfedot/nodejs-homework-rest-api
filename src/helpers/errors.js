@@ -1,17 +1,42 @@
-const messages = {
-  400: "Bad Request",
-  401: "Unautorized",
-  403: "Forbidden",
-  404: "Not found",
-  405: "Conflict",
-};
+class MyCustomError extends Error{
+  constructor(message){
+    super(message)
+    this.status = 400
+  }
+  
+}
+class ValidationError extends MyCustomError {
+  constructor(message) {
+    super(message);
+    this.status = 400;
+  }
+}
 
-const requestError = (status, message = messages[status]) => {
-  const error = new Error(message);
-  error.status = status;
-  return error;
-};
+class ConflictError extends MyCustomError {
+  constructor(message) {
+    super(message);
+    this.status = 409;
+  }
+}
+
+class WrongParametersError extends MyCustomError {
+  constructor(message) {
+    super(message);
+    this.status = 404;
+  }
+}
+
+class NotAuthorizedError extends MyCustomError {
+  constructor(message) {
+    super(message);
+    this.status = 401;
+  }
+}
 
 module.exports = {
-  requestError,
+  MyCustomError,
+  ValidationError,
+  WrongParametersError,
+  NotAuthorizedError,
+  ConflictError
 };
