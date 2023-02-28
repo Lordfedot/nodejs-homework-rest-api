@@ -1,14 +1,13 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { NotAuthorizedError, ConflictError } = require("../helpers/errors");
+const {
+  NotAuthorizedError,
+  ConflictError,
+} = require("../helpers/errors");
 const { User } = require("../db/userModel");
-const { getUrlForAvatar } = require("../helpers/getAvatar");
 
 const register = async (email, password) => {
-  const avatarURL = getUrlForAvatar(email);
-  console.log(avatarURL);
-
-  const user = new User({ email, password, avatarURL });
+  const user = new User({ email, password });
   const emailInUse = await User.findOne({ email });
   if (emailInUse) {
     throw new ConflictError("Email in use");
@@ -21,7 +20,9 @@ const login = async (email, password) => {
   if (!user) {
     throw new NotAuthorizedError("Not user find");
   }
-  if (!(await bcrypt.compare(password, user.password))) {
+
+  const wrongPassword = !(await bcrypt.compare(password, user.password));
+  if (wrongPassword) {
     throw new NotAuthorizedError("Email or password is wrong");
   }
 
@@ -32,9 +33,20 @@ const login = async (email, password) => {
     },
     process.env.JWT_SECRET
   );
+  user.token = token;
+  user.save()
+
   return { token, user };
 };
-
+const logout = async (user) => {
+  if (!user) {
+    throw new NotAuthorizedError("Not authorized");
+  }
+  const currentUser = await User.findById(user.owner);
+  currentUser.token = ''
+  currentUser.save()
+  return currentUser;
+};
 const current = async (owner) => {
   const currentUser = await User.findById(owner);
   if (!currentUser) {
@@ -43,4 +55,12 @@ const current = async (owner) => {
   return currentUser;
 };
 
-module.exports = { register, login, current };
+const updateSubscription = async (owner, subscription) => {
+  const result = await User.findOneAndUpdate(
+    { _id: owner },
+    { $set: { subscription } }
+  );
+  return result;
+};
+
+module.exports = { register, login, current, logout, updateSubscription }
