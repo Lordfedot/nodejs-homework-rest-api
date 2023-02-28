@@ -21,7 +21,9 @@ const login = async (email, password) => {
   if (!user) {
     throw new NotAuthorizedError("Not user find");
   }
-  if (!(await bcrypt.compare(password, user.password))) {
+
+  const wrongPassword = !(await bcrypt.compare(password, user.password));
+  if (wrongPassword) {
     throw new NotAuthorizedError("Email or password is wrong");
   }
 
@@ -32,9 +34,20 @@ const login = async (email, password) => {
     },
     process.env.JWT_SECRET
   );
+  user.token = token;
+  user.save()
+
   return { token, user };
 };
-
+const logout = async (user) => {
+  if (!user) {
+    throw new NotAuthorizedError("Not authorized");
+  }
+  const currentUser = await User.findById(user.owner);
+  currentUser.token = ''
+  currentUser.save()
+  return currentUser;
+};
 const current = async (owner) => {
   const currentUser = await User.findById(owner);
   if (!currentUser) {
@@ -44,8 +57,11 @@ const current = async (owner) => {
 };
 
 const updateSubscription = async (owner, subscription) => {
-  const result = await User.findOneAndUpdate({ _id: owner }, {$set: {subscription}});
+  const result = await User.findOneAndUpdate(
+    { _id: owner },
+    { $set: { subscription } }
+  );
   return result;
 };
 
-module.exports = { register, login, current, updateSubscription };
+module.exports = { register, login, current, logout, updateSubscription };
