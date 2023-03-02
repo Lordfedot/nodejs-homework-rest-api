@@ -1,14 +1,12 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const {
-  NotAuthorizedError,
-  ConflictError,
-  WrongParametersError,
-} = require("../helpers/errors");
+const { NotAuthorizedError, ConflictError } = require("../helpers/errors");
 const { User } = require("../db/userModel");
+const { getUrlForAvatar } = require("../helpers/getAvatar");
 
 const register = async (email, password) => {
-  const user = new User({ email, password });
+  const avatarURL = getUrlForAvatar(email);
+  const user = new User({ email, password, avatarURL });
   const emailInUse = await User.findOne({ email });
   if (emailInUse) {
     throw new ConflictError("Email in use");
@@ -35,7 +33,7 @@ const login = async (email, password) => {
     process.env.JWT_SECRET
   );
   user.token = token;
-  user.save()
+  user.save();
 
   return { token, user };
 };
@@ -44,8 +42,8 @@ const logout = async (user) => {
     throw new NotAuthorizedError("Not authorized");
   }
   const currentUser = await User.findById(user.owner);
-  currentUser.token = ''
-  currentUser.save()
+  currentUser.token = "";
+  currentUser.save();
   return currentUser;
 };
 const current = async (owner) => {

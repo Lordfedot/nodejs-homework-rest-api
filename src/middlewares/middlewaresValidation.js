@@ -47,12 +47,12 @@ module.exports = {
   },
   getSubscriptionValidation: (req, res, next) => {
     const schema = Joi.object({
-      subscription: Joi.string().valid('pro', 'starter', 'business'),
+      subscription: Joi.string().valid("pro", "starter", "business"),
     });
     const validationResult = schema.validate(req.body);
     if (validationResult.error) {
       next(new ValidationError(validationResult.error.details[0].message));
     }
     next();
-  }
+  },
 };
