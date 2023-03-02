@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-
+const { v4: uuidv4 } = require("uuid");
 const {
   NotAuthorizedError,
   ConflictError,
@@ -17,15 +17,15 @@ const {
 
 const register = async (email, password) => {
   const avatarURL = getUrlForAvatar(email);
-
-  const verificationToken = await sendVerificationToken(email);
-  const user = new User({ email, password, avatarURL, verificationToken });
-
+  const verificationToken = uuidv4();
+  
   const emailInUse = await User.findOne({ email });
   if (emailInUse) {
     throw new ConflictError("Email in use");
   }
 
+  await sendVerificationToken(email, verificationToken);
+  const user = new User({ email, password, avatarURL, verificationToken });
   await user.save();
   return user;
 };
@@ -76,20 +76,20 @@ const verify = async (verificationToken) => {
     throw new WrongParametersError("User not found");
   }
   user.verify = true;
-  user.verificationToken.required = false;
   await user.save();
 
   await sendVerificationSuccess(user.email);
 };
+
 const repeatVerify = async (email) => {
   if (!email) {
     throw new ValidationError("missing required field email");
   }
-  const user = await User.findOne({email});
-  if (user.verify === true) {
+  const {verify, verificationToken} = await User.findOne({email});
+  if (verify === true) {
     throw new WrongParametersError("Verification has already been passed");
   } else{
-    sendVerificationToken(email)
+    sendVerificationToken(email, verificationToken)
   }
 
 };
