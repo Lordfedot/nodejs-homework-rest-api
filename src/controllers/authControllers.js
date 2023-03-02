@@ -25,7 +25,6 @@ const loginCtrl = async (req, res, next) => {
 };
 
 const logoutCtrl = async (req, res, next) => {
-  console.log(req.user);
   await logout(req.user);
   res.json({ message: "Logout success" });
 };
