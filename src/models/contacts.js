@@ -2,14 +2,20 @@ const { getIdValidation } = require("../helpers/apiHelpers");
 const { Contact } = require("../db/contactModel");
 const { WrongParametersError } = require("../helpers/errors");
 
-
-const listContacts = async (owner, { skip, limit }) => {
-  const contacts = await Contact.find({ owner })
-    .select({ __v: 0 })
-    .skip(skip)
-    .limit(limit);
-
-  return contacts;
+const listContacts = async (owner, { skip, limit, favorite }) => {
+  if (favorite) {
+    const contacts = await Contact.find({ owner, favorite })
+      .select({ __v: 0 })
+      .skip(skip)
+      .limit(limit);
+    return contacts;
+  } else {
+    const contacts = await Contact.find({ owner })
+      .select({ __v: 0 })
+      .skip(skip)
+      .limit(limit);
+    return contacts;
+  }
 };
 
 const getContactById = async (contactId, owner) => {

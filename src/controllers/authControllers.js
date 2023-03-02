@@ -1,16 +1,18 @@
-const { NotAuthorizedError } = require("../helpers/errors");
 const {
   register,
   login,
   current,
   verify,
   repeatVerify,
+  logout,
+  updateSubscription,
 } = require("../models/auth");
 
 const registrationCtrl = async (req, res, next) => {
   const { email, password } = req.body;
   const user = await register(email, password);
-  res.json({ email: user.email, subscription: user.subscription });
+
+  res.json({ email, subscription: user.subscription });
 };
 
 const loginCtrl = async (req, res, next) => {
@@ -23,17 +25,13 @@ const loginCtrl = async (req, res, next) => {
 };
 
 const logoutCtrl = async (req, res, next) => {
-  let [user, token] = req.user;
-  if (!user) {
-    throw new NotAuthorizedError("Not authorized");
-  }
-  token = "";
-
+  console.log(req.user);
+  await logout(req.user);
   res.json({ message: "Logout success" });
 };
 
 const currentCtrl = async (req, res, next) => {
-  const [{ owner }, token] = req.user;
+  const { owner } = req.user;
   const currentUser = await current(owner);
   res.json({
     email: currentUser.email,
@@ -57,6 +55,15 @@ const repeatVerifyCtrl = async (req, res, next) => {
   res.json({ message: "success" });
 };
 
+const updateSubscriptionCtrl = async (req, res, next) => {
+  const { subscription } = req.body;
+  const { owner } = req.user;
+
+  await updateSubscription(owner, subscription);
+
+  res.json({ status: "success" });
+};
+
 module.exports = {
   registrationCtrl,
   loginCtrl,
@@ -64,4 +71,5 @@ module.exports = {
   currentCtrl,
   verifyCtrl,
   repeatVerifyCtrl,
+  updateSubscriptionCtrl,
 };

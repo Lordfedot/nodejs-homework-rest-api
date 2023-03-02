@@ -1,6 +1,9 @@
 const express = require("express");
 const { asyncWrapper } = require("../helpers/apiHelpers");
-const { getAuthValidation } = require("../middlewares/middlewaresValidation");
+const {
+  getAuthValidation,
+  getSubscriptionValidation,
+} = require("../middlewares/middlewaresValidation");
 const { authMiddleware } = require("../middlewares/authMiddleware");
 const {
   registrationCtrl,
@@ -8,7 +11,8 @@ const {
   logoutCtrl,
   currentCtrl,
   verifyCtrl,
-  repeatVerifyCtrl
+  repeatVerifyCtrl,
+  updateSubscriptionCtrl,
 } = require("../controllers/authControllers");
 
 const router = express.Router();
@@ -19,5 +23,11 @@ router.post("/logout", authMiddleware, asyncWrapper(logoutCtrl));
 router.get("/verify", asyncWrapper(repeatVerifyCtrl));
 router.get("/current", authMiddleware, asyncWrapper(currentCtrl));
 router.get("/verify/:verificationToken", asyncWrapper(verifyCtrl));
+
+router.patch(
+  "/",
+  [authMiddleware, getSubscriptionValidation],
+  asyncWrapper(updateSubscriptionCtrl)
+);
 
 module.exports = { authRouter: router };
