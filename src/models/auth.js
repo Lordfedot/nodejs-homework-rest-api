@@ -1,23 +1,39 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { NotAuthorizedError, ConflictError } = require("../helpers/errors");
+const { v4: uuidv4 } = require("uuid");
+const {
+  NotAuthorizedError,
+  ConflictError,
+  WrongParametersError,
+  ValidationError,
+} = require("../helpers/errors");
 const { User } = require("../db/userModel");
 const { getUrlForAvatar } = require("../helpers/getAvatar");
+const {
+  sendVerificationToken,
+  sendVerificationSuccess,
+} = require("../helpers/sendlers");
+
 
 const register = async (email, password) => {
   const avatarURL = getUrlForAvatar(email);
-  const user = new User({ email, password, avatarURL });
+  const verificationToken = uuidv4();
+  
   const emailInUse = await User.findOne({ email });
   if (emailInUse) {
     throw new ConflictError("Email in use");
   }
+
+  await sendVerificationToken(email, verificationToken);
+  const user = new User({ email, password, avatarURL, verificationToken });
   await user.save();
   return user;
 };
+
 const login = async (email, password) => {
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email, verify: true });
   if (!user) {
-    throw new NotAuthorizedError("Not user find");
+    throw new NotAuthorizedError("User not found");
   }
 
   const wrongPassword = !(await bcrypt.compare(password, user.password));
@@ -54,6 +70,30 @@ const current = async (owner) => {
   return currentUser;
 };
 
+const verify = async (verificationToken) => {
+  const user = await User.findOne({ verificationToken });
+  if (!user) {
+    throw new WrongParametersError("User not found");
+  }
+  user.verify = true;
+  await user.save();
+
+  await sendVerificationSuccess(user.email);
+};
+
+const repeatVerify = async (email) => {
+  if (!email) {
+    throw new ValidationError("missing required field email");
+  }
+  const {verify, verificationToken} = await User.findOne({email});
+  if (verify === true) {
+    throw new WrongParametersError("Verification has already been passed");
+  } else{
+    sendVerificationToken(email, verificationToken)
+  }
+
+};
+
 const updateSubscription = async (owner, subscription) => {
   const result = await User.findOneAndUpdate(
     { _id: owner },
@@ -62,4 +102,5 @@ const updateSubscription = async (owner, subscription) => {
   return result;
 };
 
-module.exports = { register, login, current, logout, updateSubscription };
+module.exports = { register, login, current, verify, repeatVerify, logout, updateSubscription };
+

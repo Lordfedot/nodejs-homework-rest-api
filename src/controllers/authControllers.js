@@ -2,6 +2,8 @@ const {
   register,
   login,
   current,
+  verify,
+  repeatVerify,
   logout,
   updateSubscription,
 } = require("../models/auth");
@@ -23,8 +25,7 @@ const loginCtrl = async (req, res, next) => {
 };
 
 const logoutCtrl = async (req, res, next) => {
-  console.log(req.user);
-  await logout(req.user)
+  await logout(req.user);
   res.json({ message: "Logout success" });
 };
 
@@ -35,6 +36,22 @@ const currentCtrl = async (req, res, next) => {
     email: currentUser.email,
     subscription: currentUser.subscription,
   });
+};
+
+const verifyCtrl = async (req, res, next) => {
+  const { verificationToken } = req.params;
+
+  await verify(verificationToken);
+
+  res.json({ message: "Verification successful" });
+};
+
+const repeatVerifyCtrl = async (req, res, next) => {
+  const { email } = req.body;
+
+  await repeatVerify(email);
+
+  res.json({ message: "success" });
 };
 
 const updateSubscriptionCtrl = async (req, res, next) => {
@@ -51,5 +68,7 @@ module.exports = {
   loginCtrl,
   logoutCtrl,
   currentCtrl,
+  verifyCtrl,
+  repeatVerifyCtrl,
   updateSubscriptionCtrl,
 };
